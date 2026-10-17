@@ -1,0 +1,22 @@
+# Persistent disk requires a paid Render web service. Review cost before deploying.
+services:
+  - type: web
+    name: farmcart
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: bash scripts/render-start.sh
+    healthCheckPath: /login/
+    disk:
+      name: farmcart-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.12
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: FARMCART_DATA_DIR
+        value: /var/data/farmcart

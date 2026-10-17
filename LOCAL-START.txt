@@ -1,0 +1,31 @@
+FarmCart — localhost
+
+WINDOWS
+1. Install Python 3.12 or newer from https://www.python.org/downloads/
+   Enable "Add Python to PATH" during installation.
+2. Extract the ZIP completely (do not run files from inside the ZIP).
+3. Double-click START-WINDOWS.bat.
+4. The first run installs dependencies and adds the editable sample catalog.
+   Your browser opens automatically after the server is ready.
+5. Keep the terminal window open while using the site. Ctrl+C stops it.
+
+No publishing, domain, hosting, Node.js, or payment setup is needed.
+An Internet connection is required for the initial Python dependency installation.
+
+MAC / LINUX
+python3 scripts/run_local.py
+
+OWNER ACCOUNT (Windows, from the extracted FarmCart folder)
+.venv\Scripts\python.exe manage.py createsuperuser
+Then open /admin/ using the same local server.
+
+OWNER ACCOUNT (Mac / Linux)
+.venv/bin/python manage.py createsuperuser
+
+Business WhatsApp/contact details are initially empty. Configure them in admin.
+Sample catalog images are illustrations. Upload your actual images and videos.
+Accounts, products, settings and uploaded media are retained locally.
+Do not delete db.sqlite3, media/, or .secret-key if you want to retain your data.
+
+If the default port is occupied:
+python scripts/run_local.py --port 8002
