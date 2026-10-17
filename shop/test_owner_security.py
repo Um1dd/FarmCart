@@ -499,3 +499,77 @@ class SetupDiagnosisTests(AuthHelpers, TestCase):
         self.assertFalse(denied.ok)
         self.assertIn("saatda maksimum 3", denied.error)
         self.assertEqual(len(mail.outbox), 3)
+
+
+@override_settings(**{**OPTIONS, "EMAIL_API_KEY": "private-test-api-key"})
+class ProviderReceiptTests(TestCase):
+    def message(self):
+        from django.core.mail import EmailMessage
+
+        return EmailMessage(
+            "Verification",
+            "Private OTP 12345678",
+            settings.DEFAULT_FROM_EMAIL,
+            [settings.OWNER_EMAIL],
+        )
+
+    def test_resend_uuid_receipt_required_and_logs_contain_no_credentials_or_code(self):
+        from .email_backend import ResendBackend
+        from unittest.mock import MagicMock
+
+        response = MagicMock()
+        response.status = 200
+        response.read.return_value = b'{"id":"aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee"}'
+        response.__enter__.return_value = response
+        with (
+            patch("shop.email_backend.urlopen", return_value=response),
+            self.assertLogs("shop.email_backend", level="INFO") as logs,
+        ):
+            self.assertEqual(ResendBackend().send_messages([self.message()]), 1)
+        text = " ".join(logs.output)
+        self.assertIn("Owner mail accepted", text)
+        for secret in ["12345678", settings.EMAIL_API_KEY, settings.OWNER_EMAIL]:
+            self.assertNotIn(secret, text)
+
+    def test_success_status_without_real_receipt_is_rejected(self):
+        from .email_backend import ResendBackend, EmailDeliveryError
+        from unittest.mock import MagicMock
+
+        for body in [
+            b"{}",
+            b"<html>not an API response</html>",
+            b'{"id":"not-a-receipt"}',
+        ]:
+            response = MagicMock()
+            response.status = 200
+            response.read.return_value = body
+            response.__enter__.return_value = response
+            with (
+                patch("shop.email_backend.urlopen", return_value=response),
+                self.assertLogs("shop.email_backend"),
+                self.assertRaises(EmailDeliveryError),
+            ):
+                ResendBackend().send_messages([self.message()])
+
+    def test_provider_error_body_is_not_exposed(self):
+        from .email_backend import ResendBackend, EmailDeliveryError
+        from urllib.error import HTTPError
+        from io import BytesIO
+
+        error = HTTPError(
+            "https://api.resend.com/emails",
+            403,
+            "private details",
+            {},
+            BytesIO(b"12345678 private-test-api-key"),
+        )
+        with (
+            patch("shop.email_backend.urlopen", side_effect=error),
+            self.assertLogs("shop.email_backend") as logs,
+        ):
+            with self.assertRaises(EmailDeliveryError) as caught:
+                ResendBackend().send_messages([self.message()])
+        text = str(caught.exception) + " ".join(logs.output)
+        self.assertIn("403", text)
+        self.assertNotIn("12345678", text)
+        self.assertNotIn(settings.EMAIL_API_KEY, text)

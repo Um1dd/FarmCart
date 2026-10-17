@@ -22,6 +22,7 @@ from django.utils import timezone
 from django.utils.crypto import constant_time_compare, salted_hmac
 from django.views.decorators.debug import sensitive_variables
 from .models import OwnerState, ApprovedAdministrator, AdminChallenge, SecurityThrottle
+from .email_backend import EmailDeliveryError
 
 
 @dataclass
@@ -236,6 +237,10 @@ def issue(
             )
             if sent != 1:
                 raise RuntimeError("Delivery failed")
+        except EmailDeliveryError as failure:
+            challenge.consumed, challenge.password_hash = True, ""
+            challenge.save(update_fields=["consumed", "password_hash"])
+            return Result(False, str(failure))
         except Exception:
             challenge.consumed, challenge.password_hash = True, ""
             challenge.save(update_fields=["consumed", "password_hash"])

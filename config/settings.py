@@ -148,3 +148,17 @@ CLOUD_MEDIA_ENABLED = all(
 MEDIA_DURABLE = os.environ.get("RENDER") != "true" or CLOUD_MEDIA_ENABLED
 if CLOUD_MEDIA_ENABLED:
     STORAGES["default"] = {"BACKEND": "shop.storage.CatalogCloudinaryStorage"}
+
+# Delivery metadata only; never log recipients, API keys, message bodies or OTPs.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"owner_mail_console": {"class": "logging.StreamHandler"}},
+    "loggers": {
+        "shop.email_backend": {
+            "handlers": ["owner_mail_console"],
+            "level": "INFO",
+            "propagate": False,
+        }
+    },
+}
