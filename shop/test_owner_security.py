@@ -426,3 +426,48 @@ class AdditionalSecurityTests(AuthHelpers, TestCase):
         )
         self.assertFalse(weak.ok)
         self.assertEqual(len(mail.outbox), count)
+
+
+@override_settings(**OPTIONS)
+class InteractiveInitializationTests(TestCase):
+    def test_hidden_terminal_setup_activates_only_after_owner_code(self):
+        from io import StringIO
+        from django.core.management import call_command
+
+        output = StringIO()
+        errors = StringIO()
+        code = "41728563"
+        with (
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value=""),
+            patch("shop.owner_security.secrets.randbelow", return_value=int(code)),
+            patch(
+                "getpass.getpass",
+                side_effect=[settings.ADMIN_SETUP_SECRET, PASSWORD, PASSWORD, code],
+            ),
+        ):
+            call_command("initialize_owner", stdout=output, stderr=errors)
+        user = User.objects.get(username="umid_w")
+        self.assertTrue(user.check_password(PASSWORD))
+        self.assertTrue(auth.is_owner(user))
+        self.assertEqual(mail.outbox[-1].to, [settings.OWNER_EMAIL])
+        for secret in [PASSWORD, settings.ADMIN_SETUP_SECRET, code]:
+            self.assertNotIn(secret, output.getvalue() + errors.getvalue())
+
+    def test_cli_rejects_piped_secrets_and_second_initialization(self):
+        from django.core.management import call_command, CommandError
+
+        with (
+            patch("sys.stdin.isatty", return_value=False),
+            self.assertRaises(CommandError),
+        ):
+            call_command("initialize_owner")
+        self.assertFalse(User.objects.filter(is_staff=True).exists())
+        owner = User.objects.create_user(
+            "existing_owner", password=PASSWORD, is_staff=True, is_superuser=True
+        )
+        OwnerState.objects.filter(pk=1).update(
+            owner=owner, closed=True, verified_email=settings.OWNER_EMAIL
+        )
+        with self.assertRaises(CommandError):
+            call_command("initialize_owner")

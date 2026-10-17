@@ -40,6 +40,18 @@ Məktub çatmasa resend etmək üçün setup formasına qayıtmaq olar; əvvəlk
 
 Sahib Gmail-i təsdiqdən sonra serverdə təsadüfi dəyişdirilərsə, gözləyən kodlar etibarsız olur və əlavə admin/bərpa axınları bağlanır. Gmail dəyişməsi sadə müştəri profili vasitəsilə edilmir; gələcək dəyişmə etibarlı operator tərəfindən ayrıca təsdiqlənmiş miqrasiya tələb edir.
 
+### Şifrəni təhlükəsiz lokal terminalda təyin etmək
+
+Eyni bir dəfəlik quraşdırmanı brauzer əvəzinə öz serverinizin interaktiv terminalında da başlada bilərsiniz:
+
+```bash
+python manage.py initialize_owner
+```
+
+Lokal layihədə virtual mühiti aktivləşdirməmisinizsə, Linux/macOS üçün `.venv/bin/python manage.py initialize_owner`, Windows üçün `.venv\Scripts\python.exe manage.py initialize_owner` istifadə edin. Hosting terminalında yuxarıdakı `python` əmri uyğundur.
+
+İstifadəçi adı üçün Enter basmaq `umid_w` seçir. Setup açarı, yeni şifrə, şifrə təkrarı və Gmail kodu gizli terminal sorğuları ilə daxil edilir. Şifrə/kod komanda arqumenti kimi qəbul edilmir, ekrana çap edilmir və shell tarixçəsinə yazılmır. Boru (`pipe`) ilə qeyri-interaktiv giriş rədd edilir. E-poçt təsdiqindən əvvəl hesab yaranmır; əvvəl quraşdırılmış sahib varsa, əmr bloklanır. Bu üsul da yuxarıdakı private e-poçt və qalıcı baza konfiqurasiyasını tələb edir. Render Free-də terminal yoxdursa brauzer axınından istifadə edin.
+
 ## 3. Əlavə admin, icazələrin ləğvi və şifrə bərpası
 
 - Sahib admin panelinin ana səhifəsində **Əlavə administrator yarat** keçidini görür. `/admin/owner/administrators/` yalnız təsdiqlənmiş sahibə açıqdır.
@@ -52,11 +64,11 @@ Sahib Gmail-i təsdiqdən sonra serverdə təsadüfi dəyişdirilərsə, gözlə
 
 ## 4. Mağaza idarəetməsi və Reels
 
-- **Products:** əlavə et/dəyiş/sil; ad və təsvirlər iki dildədir. Qiymət, faiz endirimi, stok və şəkilləri dəyişmək olur. Məhsulun içindəki variant sətirlərində çəki/ad, ayrıca qiymət və stok təyin edilir. Boş stok “saytdan kənar izlənir”, `0` isə “bitib” deməkdir. Məhsul səviyyəsində stok verilərsə, bütün variantlar üçün ümumi limitdir.
+- **Products:** əlavə et/dəyiş/sil; ad və təsvirlər iki dildədir. Qiymət, faiz endirimi, stok və şəkilləri dəyişmək olur. Məhsulun içindəki variant sətirlərində və ayrıca **Product variants** bölməsində çəki/ad, ayrıca qiymət və stok təyin edilir; variantların ayrıca təsdiqli silinməsi də mövcuddur. Boş stok “saytdan kənar izlənir”, `0` isə “bitib” deməkdir. Məhsul səviyyəsində stok verilərsə, bütün variantlar üçün ümumi limitdir.
 - **Regions / Categories:** əlavə et/dəyiş/sil. Məhsulu olan bölgə/kateqoriya silinməzdən əvvəl məhsulları başqa yerə keçirmək tələb olunur; təsadüfi məhsul itkisi olmur.
 - **Videos → Add:** başlıqları yazın, MP4/WebM/MOV faylını seçin, məhsulu əlaqələndirin, **Reels** və **Active** işarələrini seçin, **Position** ilə sıralayın, saxlayın. MP4 üçün browser-compatible H.264 tövsiyə olunur. Mövcud videoda Replace/Delete, playback preview və təsdiqli silmə işləyir.
 - Şəkil limiti 10 MB, video limiti 100 MB-dır; providerin ayrıca limitləri də tətbiq olunur. Render-də qalıcı Cloudinary qoşulmayıbsa upload forması faylın itə biləcəyi müvəqqəti diskə yazmağa icazə vermir və izah göstərir. Storage bağlantısı xətaları istifadəçiyə ümumi, anlaşılan mesajla qaytarılır; açarlar və provider cavabları göstərilmir.
-- **Store configuration:** WhatsApp, telefon, Instagram adı/URL, biznes adı, logo, e-poçt və ünvan dəyişdirilir. İstənilən ilkin kontaktlar miqrasiya ilə qoyulur: WhatsApp `+994772506587`, telefon `077 250 65 87`, Instagram `l.umidw`.
+- **Store configuration:** WhatsApp, telefon, Instagram adı/URL, biznes adı, logo, e-poçt və ünvan dəyişdirilir. Məlumatları ayrı-ayrılıqda silmək və ya Store configuration qeydini təsdiqlə tam silib yenisini yaratmaq olar; bu halda kontaktlar boş görünür və WhatsApp sifarişi yeni nömrə yazılana qədər deaktiv olur. İstənilən ilkin kontaktlar miqrasiya ilə qoyulur: WhatsApp `+994772506587`, telefon `077 250 65 87`, Instagram `l.umidw`.
 - Səbət variant/çəki, miqdar, endirimli vahid qiymət və toplamı serverdə hesablayır. Çatdırılma forması ad, telefon, ünvan və qeyd əlavə edir. WhatsApp düyməsi xülasəni açır; müştəri **Send** düyməsini özü basır. Avtomatik mesaj göndərilmir, stok WhatsApp linki açıldığına görə azaldılmır və rezerv edilmir; satışı sahib təsdiqləyəndə stok admin panelindən yenilənir.
 
 ## 5. Yoxlama

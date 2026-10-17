@@ -35,10 +35,12 @@ admin.site.register(Category)
 @admin.register(StoreSettings)
 class SettingsAdmin(UploadAdminMixin, admin.ModelAdmin):
     def has_add_permission(self, request):
-        return not StoreSettings.objects.exists()
+        return (
+            super().has_add_permission(request) and not StoreSettings.objects.exists()
+        )
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return super().has_delete_permission(request, obj)
 
 
 from django.utils.html import format_html
@@ -133,3 +135,11 @@ class ProductVariantInline(admin.TabularInline):
 
 
 ProductAdmin.inlines = [ProductVariantInline]
+
+
+@admin.register(ProductVariant)
+class ProductVariantAdmin(admin.ModelAdmin):
+    list_display = ["name_az", "name_ru", "product", "price", "stock", "active"]
+    list_filter = ["active", "product__region"]
+    search_fields = ["name_az", "name_ru", "product__name_az", "product__name_ru"]
+    list_select_related = ["product"]

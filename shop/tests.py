@@ -481,6 +481,29 @@ class StoreUpdateTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertContains(self.client.get("/contact/"), "Updated Store")
+        self.assertEqual(
+            self.client.get("/admin/shop/storesettings/1/delete/").status_code, 200
+        )
+        self.assertTrue(StoreSettings.objects.filter(pk=1).exists())
+        self.assertEqual(
+            self.client.post(
+                "/admin/shop/storesettings/1/delete/", {"post": "yes"}
+            ).status_code,
+            302,
+        )
+        self.assertFalse(StoreSettings.objects.exists())
+        for path in ["/", "/contact/", "/cart/"]:
+            self.assertEqual(self.client.get(path).status_code, 200)
+        response = self.client.post(
+            "/admin/shop/storesettings/add/",
+            {
+                "name": "Restored Store",
+                "phone": "+994772506587",
+                "whatsapp": "+994772506587",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertContains(self.client.get("/contact/"), "Restored Store")
 
 
 class CloudStorageRoutingTests(TestCase):
@@ -520,3 +543,68 @@ class CloudStorageRoutingTests(TestCase):
         self.assertEqual(
             storage._get_resource_type("media/products/cheese.png"), "image"
         )
+
+
+class VariantDashboardTests(TestCase):
+    def test_authorized_variant_create_edit_delete_and_customer_denial(self):
+        from .models import OwnerState, ProductVariant
+
+        owner = User.objects.create_superuser("variant_owner", "", "VariantOwner!43729")
+        OwnerState.objects.filter(pk=1).update(
+            owner=owner, closed=True, verified_email="variant.owner@gmail.com"
+        )
+        region = Region.objects.create(name_az="Region", name_ru="Регион")
+        category = Category.objects.create(name_az="Category", name_ru="Категория")
+        product = Product.objects.create(
+            name_az="Product",
+            name_ru="Товар",
+            region=region,
+            category=category,
+            price="20",
+        )
+        customer = User.objects.create_user(
+            "variant_customer", password="Customer!28751"
+        )
+        self.client.force_login(customer)
+        self.assertEqual(
+            self.client.post("/admin/shop/productvariant/add/", {}).status_code, 302
+        )
+        self.client.force_login(owner)
+        data = dict(
+            product=product.pk,
+            name_az="500 q",
+            name_ru="500 г",
+            price="12",
+            stock=5,
+            active="on",
+        )
+        self.assertEqual(
+            self.client.post("/admin/shop/productvariant/add/", data).status_code, 302
+        )
+        variant = ProductVariant.objects.get(product=product)
+        self.assertContains(self.client.get(f"/products/{product.pk}/"), "500 q")
+        self.assertEqual(
+            self.client.post(
+                f"/admin/shop/productvariant/{variant.pk}/change/",
+                {**data, "price": "15", "stock": 3},
+            ).status_code,
+            302,
+        )
+        variant.refresh_from_db()
+        self.assertEqual(variant.price, Decimal("15"))
+        self.assertEqual(variant.stock, 3)
+        self.assertEqual(
+            self.client.get(
+                f"/admin/shop/productvariant/{variant.pk}/delete/"
+            ).status_code,
+            200,
+        )
+        self.assertTrue(ProductVariant.objects.filter(pk=variant.pk).exists())
+        self.assertEqual(
+            self.client.post(
+                f"/admin/shop/productvariant/{variant.pk}/delete/", {"post": "yes"}
+            ).status_code,
+            302,
+        )
+        self.assertFalse(ProductVariant.objects.filter(pk=variant.pk).exists())
+        self.assertTrue(Product.objects.filter(pk=product.pk).exists())
