@@ -153,3 +153,8 @@ RU = {'home': 'Главная',
 
 def translations(lang):
     return RU if lang == 'ru' else AZ
+
+AZ.update(choose_variant='Çəki və ya variant seçin.', variant='Çəki / variant', out_of_stock='Stokda yoxdur.',
+          customer_name='Ad və soyad',delivery_phone='Əlaqə nömrəsi',delivery_address='Çatdırılma ünvanı',delivery_note='Sifariş qeydi',delivery='Çatdırılma məlumatları')
+RU.update(choose_variant='Выберите вес или вариант.',variant='Вес / вариант',out_of_stock='Нет в наличии.',
+          customer_name='Имя и фамилия',delivery_phone='Контактный телефон',delivery_address='Адрес доставки',delivery_note='Комментарий',delivery='Данные доставки')

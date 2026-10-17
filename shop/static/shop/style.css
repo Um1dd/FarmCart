@@ -5,3 +5,5 @@
 @font-face{font-family:Manrope;src:url('/static/shop/manrope.ttf') format('truetype');font-weight:200 800;font-display:swap}body{font-family:Manrope,Arial,sans-serif}.region-card{height:280px}.hero-bottom>span:nth-child(2){letter-spacing:.18em}@media(max-width:760px){.region-card{height:230px}}
 
 .arrow-icon{width:17px;height:17px;display:inline-block;vertical-align:middle;flex-shrink:0}.text-link .arrow-icon{width:13px;height:13px;margin-left:5px}.nav-icon{width:22px;height:25px;display:block}.region-card h3 .arrow-icon{width:23px;height:23px}
+
+.detail-form{flex-wrap:wrap}.variant-label{flex-basis:100%}.variant-label select{display:block;width:100%;padding:12px;border:1px solid var(--line);border-radius:3px;margin-top:5px;font-size:13px}.delivery-details summary{cursor:pointer;font-size:13px;margin-bottom:20px}.delivery-details input,.delivery-details textarea{width:100%}.profile-form input[type=checkbox]{display:inline-block;width:auto}.profile-form .errorlist{font-size:12px;color:#a13827}

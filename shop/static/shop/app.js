@@ -10,3 +10,8 @@ document.querySelectorAll('video').forEach(video => {
   observer.observe(video);
   video.addEventListener('play', () => document.querySelectorAll('video').forEach(other => { if (other !== video) other.pause(); }));
 });
+
+document.querySelectorAll('[data-variant-price]').forEach(select => select.addEventListener('change', () => {
+  const price = select.options[select.selectedIndex].dataset.price;
+  if (price) document.getElementById(select.dataset.variantPrice).textContent = price + ' ₼';
+}));

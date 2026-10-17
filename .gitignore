@@ -5,3 +5,7 @@ media/
 .secret-key
 staticfiles/
 .env
+backups/
+*.dump
+*.backup
+private-*.json

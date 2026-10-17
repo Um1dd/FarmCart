@@ -4,3 +4,7 @@ asgiref==3.12.1
 sqlparse==0.6.0
 gunicorn==26.2.0
 whitenoise==6.12.0
+dj-database-url==3.1.2
+psycopg[binary]==3.3.6
+django-cloudinary-storage==0.3.0
+cloudinary==1.46.3

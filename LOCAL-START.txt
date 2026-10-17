@@ -15,14 +15,13 @@ An Internet connection is required for the initial Python dependency installatio
 MAC / LINUX
 python3 scripts/run_local.py
 
-OWNER ACCOUNT (Windows, from the extracted FarmCart folder)
-.venv\Scripts\python.exe manage.py createsuperuser
-Then open /admin/ using the same local server.
+OWNER ACCOUNT
+Use /admin/setup/ only after configuring OWNER_EMAIL, EMAIL_API_KEY,
+EMAIL_FROM and a strong ADMIN_SETUP_SECRET in private server settings.
+See docs/OWNER_SETUP.md for the email-verified initialization process.
+No default admin password is shipped. createsuperuser does not bypass verification.
 
-OWNER ACCOUNT (Mac / Linux)
-.venv/bin/python manage.py createsuperuser
-
-Business WhatsApp/contact details are initially empty. Configure them in admin.
+Requested WhatsApp, phone and Instagram details are installed by migration and remain editable in admin.
 Sample catalog images are illustrations. Upload your actual images and videos.
 Accounts, products, settings and uploaded media are retained locally.
 Do not delete db.sqlite3, media/, or .secret-key if you want to retain your data.

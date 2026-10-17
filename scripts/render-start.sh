@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 mkdir -p "${FARMCART_DATA_DIR:-.}"
-# A marker prevents deleted samples from being recreated on every deployment.
-if [ ! -f "${FARMCART_DATA_DIR:-.}/db.sqlite3" ]; then
+# Only a new local SQLite demo is seeded automatically. Never seed a remote database.
+if [ -z "${DATABASE_URL:-}" ] && [ ! -f "${FARMCART_DATA_DIR:-.}/db.sqlite3" ]; then
     seed_first_run=1
 else
     seed_first_run=0
 fi
 python manage.py migrate --noinput
+python manage.py prune_admin_challenges
 if [ "$seed_first_run" = 1 ]; then
     python manage.py seed_demo
 fi

@@ -1,0 +1,1 @@
+{% extends 'admin/index.html' %}{% block content %}{% if verified_owner %}<div class="module" style="padding:16px"><h2>Sahib təhlükəsizliyi</h2><p><a href="/admin/owner/administrators/">Əlavə administrator yarat — şifrə və Gmail təsdiqi tələb olunur</a></p></div>{% endif %}{{ block.super }}{% endblock %}
