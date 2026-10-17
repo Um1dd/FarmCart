@@ -143,7 +143,9 @@ def issue(
     with transaction.atomic():
         state = state_locked()
         if not throttle("request:" + purpose + ":" + source, 10, 900):
-            return Result(False, ERROR)
+            return Result(
+                False, "Sorğu limiti dolub. 15 dəqiqə sonra yenidən cəhd edin."
+            )
         if not configured():
             return Result(
                 False, "Təhlükəsiz e-poçt və qalıcı baza konfiqurasiyası tamamlanmayıb."
@@ -183,10 +185,17 @@ def issue(
             purpose != "recover"
             and User.objects.filter(username__iexact=username).exists()
         ):
-            return Result(False, ERROR)
+            # Only a setup-secret holder or freshly authenticated owner reaches this point.
+            return Result(
+                False,
+                "Bu istifadəçi adı artıq istifadə olunur. Mövcud müştəri hesabına admin hüququ verilmir; başqa admin adı seçin.",
+            )
         # Global limits prevent changing IP/session to send arbitrary amounts of mail.
         if not throttle("delivery:" + purpose, 3, 3600):
-            return Result(False, ERROR)
+            return Result(
+                False,
+                "E-poçt göndərişi limiti dolub: saatda maksimum 3 cəhd. 1 saatlıq limit bitdikdən sonra yenidən cəhd edin.",
+            )
         # Keep one outstanding operation of each type, invalidating older codes.
         AdminChallenge.objects.filter(purpose=purpose, consumed=False).update(
             consumed=True, password_hash=""

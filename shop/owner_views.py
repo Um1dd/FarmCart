@@ -91,7 +91,7 @@ def operation(request, purpose):
                 900,
             )
         if not allowed:
-            error = security.ERROR
+            error = "Sorğu limiti dolub. 15 dəqiqə sonra yenidən cəhd edin."
         elif purpose == "setup" and (
             len(settings.ADMIN_SETUP_SECRET) < 32
             or not constant_time_compare(
@@ -103,7 +103,7 @@ def operation(request, purpose):
                 security.throttle(
                     "wrong-setup:" + request.META.get("REMOTE_ADDR", ""), 10, 900
                 )
-            error = security.ERROR
+            error = "Quraşdırma açarı qəbul edilmədi. Bu sahəyə Gmail kodunu və ya admin şifrəsini deyil, Render-də ADMIN_SETUP_SECRET üçün saxladığınız tam dəyəri yazın. Serverdəki açar ən azı 32 simvol olmalıdır."
         elif form.is_valid():
             binding = secrets.token_urlsafe(32)
             result = security.issue(

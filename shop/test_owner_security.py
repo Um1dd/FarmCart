@@ -471,3 +471,31 @@ class InteractiveInitializationTests(TestCase):
         )
         with self.assertRaises(CommandError):
             call_command("initialize_owner")
+
+
+@override_settings(**OPTIONS)
+class SetupDiagnosisTests(AuthHelpers, TestCase):
+    def test_existing_customer_is_explained_only_after_correct_secret(self):
+        User.objects.create_user("umid_w", password=PASSWORD)
+        data = {
+            "username": "umid_w",
+            "password1": PASSWORD,
+            "password2": PASSWORD,
+            "setup_secret": "wrong-key",
+        }
+        response = self.client.post("/admin/setup/", data)
+        self.assertNotContains(response, "Bu istifadəçi adı artıq istifadə olunur")
+        response = self.client.post(
+            "/admin/setup/", {**data, "setup_secret": settings.ADMIN_SETUP_SECRET}
+        )
+        self.assertContains(response, "Bu istifadəçi adı artıq istifadə olunur")
+        self.assertFalse(User.objects.get(username="umid_w").is_staff)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_delivery_limit_is_clear_and_limits_remain_enforced(self):
+        for i in range(3):
+            self.assertTrue(self.issue(username=f"candidate{i}").ok)
+        denied = self.issue(username="candidate4")
+        self.assertFalse(denied.ok)
+        self.assertIn("saatda maksimum 3", denied.error)
+        self.assertEqual(len(mail.outbox), 3)
