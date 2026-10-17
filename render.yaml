@@ -1,16 +1,12 @@
-# Persistent disk requires a paid Render web service. Review cost before deploying.
+# Free preview service. Database and uploads are temporary on this plan.
 services:
   - type: web
     name: farmcart
     runtime: python
-    plan: starter
+    plan: free
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
     startCommand: bash scripts/render-start.sh
     healthCheckPath: /login/
-    disk:
-      name: farmcart-data
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.12
@@ -19,4 +15,4 @@ services:
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: FARMCART_DATA_DIR
-        value: /var/data/farmcart
+        value: /tmp/farmcart

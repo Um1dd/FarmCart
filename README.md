@@ -63,15 +63,12 @@ This repository runs a development server by default. Before a public launch, us
 
 Serve collected static files and validated uploads through the production web server/object storage; Django's media helper is development-only. Enforce request/upload limits at the proxy (image 10 MB / video 100 MB), disable execution in the upload directory, and retain `nosniff` headers. Scan untrusted files and transcode videos before broad public upload use. Add shared login throttling at the edge/cache for multiple application workers; the development login throttle uses Django's per-process local cache. SQLite is suitable for a modest single-instance first release; migrate to PostgreSQL and shared media storage when concurrency or multiple instances require it. No hosting, domain, production administrator, backup schedule, or business contact has been configured by this implementation.
 
-## Render deployment
+## Render deployment (free preview)
 
-`render.yaml` is a Blueprint for a paid Starter web service with a 1 GB persistent disk. Render shows the current service/disk cost before provisioning; creating a Render account alone does not deploy or pay for this service. The free web service has no persistent disk and is unsuitable for retaining this app's SQLite database and uploads.
+`render.yaml` uses Render's Free web service plan, without a paid disk or paid database. This is a preview configuration: SQLite data and uploaded media under `/tmp/farmcart` may disappear on restarts, redeployments, or instance replacement. Do not rely on it for real customer data or business inventory. Initial sample content is restored when the database is absent. The free instance may sleep when idle and take longer to open after inactivity.
 
-1. Push this source tree (including `render.yaml`, migrations, scripts and static assets) to the intended GitHub repository. Do not upload `.venv`, `.secret-key`, databases, or user media.
-2. In Render select **New → Blueprint**, connect that repository, and select its branch. Review the service and disk price before creating resources.
-3. The Blueprint generates a private Django key, disables debug, collects/serves static files with WhiteNoise and starts Gunicorn. Render's hostname is added to allowed hosts and CSRF origins. TLS is handled by Render's trusted proxy.
-4. The startup script migrates the persistent SQLite database under `/var/data/farmcart`; it adds labeled samples only when the database is initially absent. Uploaded media lives on the same disk. One application worker with two threads is configured for this initial single-instance SQLite deployment.
-5. After the service is Live, open its Render-provided HTTPS URL. In its **Shell** run `python manage.py createsuperuser` once, then open `/admin/` in the browser to manage the store. Never enter passwords in chat or commit them.
-6. Configure the business WhatsApp/contact details and upload authentic product videos. Back up the disk/database regularly. Public catalog uploads support byte-range video requests and reject paths outside the media directory.
+1. Connect the GitHub repository using **New → Blueprint** in Render.
+2. Confirm the service plan says **Free** and no paid disk/database is listed before deploying. If Render separately requires account/payment verification, that is an account requirement; this configuration does not bypass it. Do not select a paid upgrade to preview the app.
+3. Render generates a private Django key, disables debug, collects static assets with WhiteNoise, and runs Gunicorn. Open the Render-provided URL after the service becomes Live.
 
-The provided configuration has been exercised locally with debug disabled, secure proxy headers, Gunicorn, collected static files, and a separate persistent data directory. This does not claim an actual Render deployment has occurred. You must authorize code publication to GitHub and review Render provisioning/cost before the site receives a public URL.
+For local use with durable data and no hosting plan, use the local launcher described above. A real store deployment needs durable database/media storage, backups, and administrator provisioning; those are not supplied by this free preview configuration. No default administrator password is shipped. Render's Free service may not provide a shell for interactive administrator creation.
